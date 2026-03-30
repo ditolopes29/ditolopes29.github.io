@@ -1,0 +1,356 @@
+<!-- Chosen Palette: Warm Neutrals with Deep Blue Accents -->
+<!-- Application Structure Plan: The application is structured as a single-page interactive study guide. It uses a linear but exploratory flow: Introduction -> The Transformation (Interactive Tabs comparing past/present) -> The Core Theme of Forgiveness (Expandable scriptures) -> The Impact (Data visualization of his works) -> Personal Lessons. This structure allows users to logically follow Paul's journey from persecutor to forgiven apostle, understanding the magnitude of Jehovah's mercy before seeing its practical output. -->
+<!-- Visualization & Content Choices: 
+1. Interactive Tabs: Compares Saul the persecutor vs. Paul the Apostle. Goal: Highlight the contrast. Justification: Tabs prevent text overload and encourage active comparison.
+2. Expandable Scripture Blocks: Goal: Focus on Jehovah's forgiveness. Viz: Interactive text blocks. Justification: Keeps the main narrative clean while allowing deep-dive into Bible verses on demand.
+3. Donut Chart (Chart.js): Goal: Show the fruitage of a forgiven person. Viz: Proportion of the Christian Greek Scriptures written by Paul. Justification: A visual representation powerfully illustrates how much Jehovah used Paul after forgiving him. Method: Chart.js Canvas.
+CONFIRMING: No SVG or Mermaid used. -->
+<!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>O Perdão de Jeová: O Exemplo de Paulo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background-color: #fdfbf7;
+            color: #1f2937;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+        .tab-active {
+            border-bottom-width: 4px;
+            border-color: #1e3a8a;
+            color: #1e3a8a;
+            font-weight: 600;
+        }
+        .tab-inactive {
+            border-bottom-width: 4px;
+            border-color: transparent;
+            color: #6b7280;
+        }
+        .transition-all-custom {
+            transition-property: all;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+            transition-duration: 300ms;
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-blue-200 selection:text-blue-900">
+
+    <nav class="sticky top-0 z-50 bg-white shadow-sm border-b border-gray-200 opacity-95">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center space-x-2">
+                    <span class="text-2xl">📖</span>
+                    <span class="font-bold text-xl tracking-tight text-blue-900">Estudo Profundo</span>
+                </div>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#transformacao" class="text-gray-600 hover:text-blue-800 font-medium">A Transformação</a>
+                    <a href="#perdao" class="text-gray-600 hover:text-blue-800 font-medium">O Perdão de Jeová</a>
+                    <a href="#frutos" class="text-gray-600 hover:text-blue-800 font-medium">Frutos do Perdão</a>
+                    <a href="#licoes" class="text-gray-600 hover:text-blue-800 font-medium">Lições</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <header class="bg-blue-900 text-white py-20 px-4">
+        <div class="max-w-4xl mx-auto text-center">
+            <h1 class="text-4xl md:text-6xl font-extrabold mb-6 leading-tight">A Extensão do Perdão de Jeová</h1>
+            <p class="text-xl md:text-2xl font-light text-blue-100 mb-8">Um estudo analítico sobre como a benignidade imerecida transformou o maior perseguidor no maior apóstolo.</p>
+            <a href="#transformacao" class="inline-block bg-white text-blue-900 font-semibold px-8 py-3 rounded-full shadow-lg hover:bg-gray-100 transition-colors">Iniciar Estudo &#8595;</a>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-24">
+
+        <section id="transformacao" class="scroll-mt-24">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">A Transformação: De Saulo a Paulo</h2>
+                <p class="text-lg text-gray-600 max-w-2xl mx-auto">Para entendermos a magnitude do perdão de Jeová, precisamos primeiro analisar quem era este homem antes de receber misericórdia. O contraste é a prova definitiva do poder do perdão divino.</p>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-md overflow-hidden border border-gray-100">
+                <div class="flex border-b border-gray-200">
+                    <button id="btn-saulo" class="flex-1 py-4 px-6 text-lg text-center tab-active focus:outline-none transition-all-custom">
+                        &#9838; O Passado (Saulo de Tarso)
+                    </button>
+                    <button id="btn-paulo" class="flex-1 py-4 px-6 text-lg text-center tab-inactive focus:outline-none transition-all-custom">
+                        &#10010; O Futuro (Apóstolo Paulo)
+                    </button>
+                </div>
+                
+                <div class="p-8">
+                    <div id="content-saulo" class="block animate-fade-in">
+                        <h3 class="text-2xl font-bold text-red-800 mb-4">Um Ferrenho Perseguidor</h3>
+                        <p class="text-gray-700 mb-4 text-lg leading-relaxed">Antes de conhecer a verdade, Saulo respirava ameaça e assassinato contra os discípulos do Senhor. Ele foi cúmplice no apedrejamento de Estêvão e invadia casas para arrastar cristãos para a prisão.</p>
+                        <ul class="space-y-3 mt-6">
+                            <li class="flex items-start">
+                                <span class="text-red-600 mr-2">&#10006;</span>
+                                <span class="text-gray-700"><strong>Blasfemador:</strong> Falava contra o caminho de Cristo.</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="text-red-600 mr-2">&#10006;</span>
+                                <span class="text-gray-700"><strong>Insolente:</strong> Agia com arrogância e violência brutal.</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="text-red-600 mr-2">&#10006;</span>
+                                <span class="text-gray-700"><strong>Ignorância:</strong> Ele agia por falta de fé, acreditando estar fazendo a vontade divina.</span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div id="content-paulo" class="hidden animate-fade-in">
+                        <h3 class="text-2xl font-bold text-blue-800 mb-4">Um Vaso Escolhido</h3>
+                        <p class="text-gray-700 mb-4 text-lg leading-relaxed">Após o encontro na estrada para Damasco, sua vida mudou radicalmente. Ele não apenas aceitou o Cristo, mas dedicou cada fibra de seu ser para pregar as boas novas entre as nações.</p>
+                        <ul class="space-y-3 mt-6">
+                            <li class="flex items-start">
+                                <span class="text-green-600 mr-2">&#10004;</span>
+                                <span class="text-gray-700"><strong>Zeloso:</strong> Realizou extensas viagens missionárias por todo o mundo antigo.</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="text-green-600 mr-2">&#10004;</span>
+                                <span class="text-gray-700"><strong>Humilde:</strong> Reconheceu que tudo o que era, devia à benignidade imerecida de Deus.</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="text-green-600 mr-2">&#10004;</span>
+                                <span class="text-gray-700"><strong>Inspirado:</strong> Escreveu grande parte das Escrituras Gregas Cristãs.</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="perdao" class="scroll-mt-24 bg-blue-50 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-16 border-y border-blue-100">
+            <div class="max-w-6xl mx-auto">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                    <div>
+                        <h2 class="text-3xl font-bold text-gray-900 mb-6">A Profundeza do Perdão de Jeová</h2>
+                        <p class="text-lg text-gray-700 mb-6 leading-relaxed">
+                            O nome de Deus é Jeová, e Ele é o Deus de verdadeiro perdão. A história de Paulo não é apenas sobre a mudança de um homem, mas é o testemunho definitivo de que Jeová está disposto a perdoar "em larga medida".
+                        </p>
+                        <p class="text-lg text-gray-700 mb-6 leading-relaxed">
+                            Muitos hoje sentem que seus pecados passados os desqualificam de servir a Deus. No entanto, Paulo chamou a si mesmo de o "pior" dos pecadores. Se Jeová pôde perdoar alguém que ativamente perseguia e causava a morte de Seus servos, a Sua misericórdia é indiscutivelmente grande o suficiente para cobrir os nossos erros quando nos arrependemos sinceramente.
+                        </p>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div class="bg-white rounded-lg shadow p-2 border border-blue-100">
+                            <button class="w-full text-left px-4 py-3 font-semibold text-blue-900 flex justify-between items-center focus:outline-none" onclick="toggleScripture('scripture1', this)">
+                                <span>Ler 1 Timóteo 1:13-16</span>
+                                <span class="text-xl transition-transform duration-200">&#43;</span>
+                            </button>
+                            <div id="scripture1" class="hidden px-4 pb-4 pt-2 text-gray-600 italic border-t border-gray-100 mt-2">
+                                "Embora eu fosse antes blasfemador, perseguidor e insolente. No entanto, foi-me mostrada misericórdia, porque eu agia em ignorância e com falta de fé. Mas a benignidade imerecida do nosso Senhor abundou extraordinariamente com a fé e o amor que há em Cristo Jesus. Fiel e merecedora de plena aceitação é a palavra de que Cristo Jesus veio ao mundo para salvar pecadores. Destes, eu sou o pior. No entanto, por essa mesma razão me foi mostrada misericórdia, para que, por meio de mim, como o pior caso, Cristo Jesus demonstrasse toda a sua paciência, fazendo de mim um exemplo para os que basearão nele a sua fé, visando a vida eterna."
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-lg shadow p-2 border border-blue-100">
+                            <button class="w-full text-left px-4 py-3 font-semibold text-blue-900 flex justify-between items-center focus:outline-none" onclick="toggleScripture('scripture2', this)">
+                                <span>Ler Salmo 130:3, 4</span>
+                                <span class="text-xl transition-transform duration-200">&#43;</span>
+                            </button>
+                            <div id="scripture2" class="hidden px-4 pb-4 pt-2 text-gray-600 italic border-t border-gray-100 mt-2">
+                                "Se vigiasses os erros, ó Jah, quem, ó Jeová, poderia ficar de pé? Pois contigo há o verdadeiro perdão, para que sejas temido."
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="frutos" class="scroll-mt-24">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">Os Frutos do Perdão</h2>
+                <p class="text-lg text-gray-600 max-w-2xl mx-auto">Quando Jeová perdoa, Ele não apenas apaga o passado; Ele abre a porta para um futuro produtivo. Veja o impacto do ministério de Paulo após ele ter recebido a misericórdia de Deus.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+                <div class="chart-container">
+                    <canvas id="paulChart"></canvas>
+                </div>
+                
+                <div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4">Escrituras Gregas Cristãs</h3>
+                    <p class="text-gray-700 mb-6 text-lg">
+                        Deus usou poderosamente este homem perdoado. Das 27 cartas e livros que compõem as Escrituras Gregas Cristãs (frequentemente chamadas de Novo Testamento), Paulo foi inspirado por Jeová a escrever 14 delas.
+                    </p>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-blue-50 p-4 rounded-lg text-center border border-blue-100">
+                            <span class="block text-3xl font-extrabold text-blue-900">14</span>
+                            <span class="text-sm text-gray-600 font-medium uppercase tracking-wide">Livros por Paulo</span>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg text-center border border-gray-200">
+                            <span class="block text-3xl font-extrabold text-gray-700">13</span>
+                            <span class="text-sm text-gray-600 font-medium uppercase tracking-wide">Outros Escritores</span>
+                        </div>
+                    </div>
+                    <p class="mt-6 text-sm text-gray-500 italic">
+                        Isso inclui cartas profundas como Romanos, Coríntios e Hebreus, que até hoje orientam e fortalecem a congregação cristã mundial.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section id="licoes" class="scroll-mt-24 mb-20">
+            <div class="bg-slate-900 rounded-3xl p-8 md:p-12 text-white shadow-xl relative overflow-hidden">
+                <div class="relative z-10">
+                    <h2 class="text-3xl font-bold mb-8 text-center text-blue-100">Lições Pessoais para Nós</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        
+                        <div class="bg-slate-800 bg-opacity-50 p-6 rounded-xl border border-slate-700 hover:bg-slate-700 transition-colors">
+                            <div class="text-3xl mb-4 text-blue-400">&#10024;</div>
+                            <h4 class="text-xl font-bold mb-3">Nenhum Pecado é Grande Demais</h4>
+                            <p class="text-slate-300 text-sm leading-relaxed">
+                                Se nos arrependemos sinceramente, mudamos nosso curso de ação e buscamos o perdão de Jeová com base no resgate de Cristo, podemos ser limpos. Paulo era o "pior dos pecadores", mas foi perdoado.
+                            </p>
+                        </div>
+
+                        <div class="bg-slate-800 bg-opacity-50 p-6 rounded-xl border border-slate-700 hover:bg-slate-700 transition-colors">
+                            <div class="text-3xl mb-4 text-blue-400">&#9829;</div>
+                            <h4 class="text-xl font-bold mb-3">A Culpa Não Deve Nos Paralisar</h4>
+                            <p class="text-slate-300 text-sm leading-relaxed">
+                                Paulo não permitiu que a culpa de seu passado como perseguidor o impedisse de servir. Ele aceitou a misericórdia de Jeová e concentrou suas energias em fazer o bem dali em diante.
+                            </p>
+                        </div>
+
+                        <div class="bg-slate-800 bg-opacity-50 p-6 rounded-xl border border-slate-700 hover:bg-slate-700 transition-colors">
+                            <div class="text-3xl mb-4 text-blue-400">&#9873;</div>
+                            <h4 class="text-xl font-bold mb-3">Gratidão Gera Zelo</h4>
+                            <p class="text-slate-300 text-sm leading-relaxed">
+                                Compreender a profundidade do perdão de Jeová motivou Paulo a trabalhar mais do que todos os outros apóstolos. O perdão não é licença para preguiça, mas um combustível para a gratidão ativa.
+                            </p>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-gray-100 border-t border-gray-200 py-8 text-center text-gray-500 text-sm mt-12">
+        <p>Um estudo focado no poder transformador da misericórdia divina.</p>
+        <p class="mt-2 font-semibold">O nome de Deus é Jeová, o Grandioso Perdoador.</p>
+    </footer>
+
+    <script>
+        const btnSaulo = document.getElementById('btn-saulo');
+        const btnPaulo = document.getElementById('btn-paulo');
+        const contentSaulo = document.getElementById('content-saulo');
+        const contentPaulo = document.getElementById('content-paulo');
+
+        btnSaulo.addEventListener('click', () => {
+            contentSaulo.classList.remove('hidden');
+            contentPaulo.classList.add('hidden');
+            
+            btnSaulo.classList.remove('tab-inactive');
+            btnSaulo.classList.add('tab-active');
+            
+            btnPaulo.classList.remove('tab-active');
+            btnPaulo.classList.add('tab-inactive');
+        });
+
+        btnPaulo.addEventListener('click', () => {
+            contentPaulo.classList.remove('hidden');
+            contentSaulo.classList.add('hidden');
+            
+            btnPaulo.classList.remove('tab-inactive');
+            btnPaulo.classList.add('tab-active');
+            
+            btnSaulo.classList.remove('tab-active');
+            btnSaulo.classList.add('tab-inactive');
+        });
+
+        function toggleScripture(id, btnElement) {
+            const content = document.getElementById(id);
+            const icon = btnElement.querySelector('span:last-child');
+            
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                icon.innerHTML = '&#8722;'; 
+                icon.style.transform = 'rotate(180deg)';
+            } else {
+                content.classList.add('hidden');
+                icon.innerHTML = '&#43;';
+                icon.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('paulChart').getContext('2d');
+            
+            Chart.defaults.font.family = 'system-ui, -apple-system, sans-serif';
+            Chart.defaults.color = '#4b5563';
+
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Escritos por Paulo', 'Outros Escritores'],
+                    datasets: [{
+                        data: [14, 13],
+                        backgroundColor: [
+                            '#1e3a8a', 
+                            '#e5e7eb'  
+                        ],
+                        hoverBackgroundColor: [
+                            '#1e40af',
+                            '#d1d5db'
+                        ],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                font: {
+                                    size: 14,
+                                    weight: '500'
+                                },
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                            titleFont: { size: 14 },
+                            bodyFont: { size: 16, weight: 'bold' },
+                            padding: 12,
+                            displayColors: false,
+                            callbacks: {
+                                label: function(context) {
+                                    return context.label + ': ' + context.raw + ' livros';
+                                }
+                            }
+                        }
+                    },
+                    animation: {
+                        animateScale: true,
+                        animateRotate: true
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
